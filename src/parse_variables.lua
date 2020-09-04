@@ -79,6 +79,10 @@ function _M:declare_common_vars(conf)
   local cb_url            = cb_scheme .. "://" .. cb_server_name .. cb_uri
   local redirect_url      = cb_scheme .. "://" .. cb_server_name .. ngx.var.request_uri
 
+  local jwt_at_payload           = conf['jwt_at_payload']
+  local jwt_at_payload_http_code = conf['jwt_at_payload_http_code']
+  local jwt_at_payload_key       = conf['jwt_at_payload_key']
+
   return oauth_cred_id,
           private_key_id,
           uri_args,
@@ -93,7 +97,10 @@ function _M:declare_common_vars(conf)
           cb_scheme,
           cb_server_name,
           cb_url,
-          redirect_url
+          redirect_url,
+          jwt_at_payload,
+          jwt_at_payload_http_code,
+          jwt_at_payload_key
 end
 
 function _M:declare_provider_specific_vars(conf)

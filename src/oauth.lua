@@ -24,7 +24,10 @@ function _M:issuer(conf)
         cb_scheme,
         cb_server_name,
         cb_url,
-        redirect_url = parse_variables:declare_common_vars(conf)
+        redirect_url,
+        jwt_at_payload,
+        jwt_at_payload_http_code,
+        jwt_at_payload_key = parse_variables:declare_common_vars(conf)
 
   local scope, authorize_url, access_token_url, userinfo_url = parse_variables:declare_provider_specific_vars(conf)
 
@@ -61,7 +64,10 @@ function _M:issuer(conf)
     secure_cookies,
     http_only_cookies,
     cookie_name,
-    uri_args
+    uri_args,
+    jwt_at_payload,
+    jwt_at_payload_http_code,
+    jwt_at_payload_key
   )
 
 end

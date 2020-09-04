@@ -288,7 +288,7 @@ function _M:redirect_to_auth(authorize_url, client_id, scope, cb_url, redirect_u
   end
 end
 
-function _M:redirect_with_cookie(claims, key, private_key_id, jwt_validity, secure_cookies, http_only_cookies, cookie_name, uri_args)
+function _M:redirect_with_cookie(claims, key, private_key_id, jwt_validity, secure_cookies, http_only_cookies, cookie_name, uri_args, jwt_at_payload, jwt_at_payload_http_code, jwt_at_payload_key)
   local jwt = sign_jwt(claims, key, private_key_id)
 
   local expires      = ngx_time() + jwt_validity
@@ -304,7 +304,15 @@ function _M:redirect_with_cookie(claims, key, private_key_id, jwt_validity, secu
   }
   local m, err = ngx_re_match(uri_args["state"], "uri=(?<uri>.+)")
   if m then
-    return ngx_redirect(m["uri"])
+    if jwt_at_payload then
+      ngx.status = jwt_at_payload_http_code
+      ngx_header["Content-Type"]='application/json'
+      ngx_header["Location"]=m["uri"]
+      ngx_say('{"' .. jwt_at_payload_key .. '": "'.. jwt .. '"}')
+      ngx_exit(ngx.status)
+    else
+      return ngx_redirect(m["uri"])
+    end
   else
     return ngx_exit(ngx.BAD_REQUEST)
   end
