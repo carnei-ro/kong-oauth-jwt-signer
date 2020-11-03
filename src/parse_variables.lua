@@ -15,6 +15,7 @@ local ngx_say        = ngx.say
 local ngx_exit       = ngx.exit
 local ngx_log        = ngx.log
 local ngx_ERR        = ngx.ERR
+local ngx_decode_b64 = ngx.decode_base64
 
 json.decode_array_with_array_mt(true)
 
@@ -197,7 +198,7 @@ function _M:declare_key_client_id_secret(oauth_cred_id, private_key_id, conf)
   if ((not key) or (not client_id) or (not client_secret)) then
     return_error(500, ("Could not load key, client_id or client_secret"))
   end
-  return key, client_id, client_secret
+  return ngx_decode_b64(key), client_id, client_secret
 end
 
 return _M
