@@ -142,7 +142,7 @@ function _M:declare_provider_specific_vars(conf)
     local userinfo_url     = 'https://api.github.com/user'
     return scope, authorize_url, access_token_url, userinfo_url
   elseif (conf['oauth_provider'] == 'google') then
-    local scope            = conf['scopes'] and table_concat(conf['scopes'], " ") or "email"
+    local scope            = conf['scopes'] and table_concat(conf['scopes'], " ") or "email profile openid"
     local authorize_url    = 'https://accounts.google.com/o/oauth2/auth'
     local access_token_url = 'https://accounts.google.com/o/oauth2/token'
     local userinfo_url     = 'https://www.googleapis.com/oauth2/v2/userinfo'

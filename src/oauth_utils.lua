@@ -118,10 +118,13 @@ local function generate_claims_google(profile, issuer, jwt_validity)
   claims["iss"] = issuer
   claims["iat"] = ngx_time()
   claims["exp"] = ngx_time() + jwt_validity
-  claims["email_verified"] = profile["verified_email"]
-  claims["user"] = profile["email"]:match("([^@]+)@.+")
-  claims["domain"] = profile["email"]:match("[^@]+@(.+)")
-  claims["picture"] = profile["picture"]
+  claims["email_verified"] = profile["verified_email"] or nil
+  claims["user"] = profile["email"]:match("([^@]+)@.+") or nil
+  claims["domain"] = profile["email"]:match("[^@]+@(.+)") or nil
+  claims["picture"] = profile["picture"] or nil
+  claims["name"] = profile["name"] or nil
+  claims["family_name"] = profile["family_name"] or nil
+  claims["given_name"] = profile["given_name"] or nil
   claims["provider"] = 'google'
   return claims
 end
@@ -152,8 +155,8 @@ local function generate_claims_facebook(profile, issuer, jwt_validity)
   claims["user"] = profile["email"]:match("([^@]+)@.+")
   claims["domain"] = profile["email"]:match("[^@]+@(.+)")
   claims["name"] = profile["name"]
-  claims["last_name"] = profile["last_name"]
-  claims["first_name"] = profile["first_name"]
+  claims["family_name"] = profile["last_name"]
+  claims["given_name"] = profile["first_name"]
   claims["picture"] = profile["picture"]["data"]["url"]
   claims["short_name"] = profile["short_name"]
   claims["provider"] = 'facebook'
@@ -205,8 +208,8 @@ local function generate_claims_microsoft(profile, issuer, jwt_validity)
   claims["name"] = profile["displayName"]
   claims["user"] = profile["userPrincipalName"]:match("([^@]+)@.+")
   claims["domain"] = profile["userPrincipalName"]:match("[^@]+@(.+)")
-  claims["givenname"] = profile["givenName"]
-  claims["surname"] = profile["surname"]
+  claims["given_name"] = profile["givenName"]
+  claims["family_name"] = profile["surname"]
   claims["provider"] = 'microsoft'
   return claims
 end
@@ -217,11 +220,11 @@ local function generate_claims_zoho(profile, issuer, jwt_validity)
   claims["iss"] = issuer
   claims["iat"] = ngx.time()
   claims["exp"] = ngx.time() + jwt_validity
-  claims["display_name"] = profile["Display_Name"]
+  claims["name"] = profile["Display_Name"]
   claims["user"] = profile["Email"]:match("([^@]+)@.+")
   claims["domain"] = profile["Email"]:match("[^@]+@(.+)")
-  claims["name"] = profile["First_Name"]
-  claims["surname"] = profile["Last_Name"]
+  claims["given_name"] = profile["First_Name"]
+  claims["family_name"] = profile["Last_Name"]
   claims["provider"] = 'zoho'
   return claims
 end
