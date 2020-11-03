@@ -27,7 +27,8 @@ function _M:issuer(conf)
         redirect_url,
         jwt_at_payload,
         jwt_at_payload_http_code,
-        jwt_at_payload_key = parse_variables:declare_common_vars(conf)
+        jwt_at_payload_key,
+        unescape_uri = parse_variables:declare_common_vars(conf)
 
   local scope, authorize_url, access_token_url, userinfo_url = parse_variables:declare_provider_specific_vars(conf)
 
@@ -67,7 +68,8 @@ function _M:issuer(conf)
     uri_args,
     jwt_at_payload,
     jwt_at_payload_http_code,
-    jwt_at_payload_key
+    jwt_at_payload_key,
+    unescape_uri
   )
 
 end

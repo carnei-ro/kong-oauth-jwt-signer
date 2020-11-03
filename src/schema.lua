@@ -98,7 +98,8 @@ return {
             values = {
               type = "string",
               required = true,
-            }
+            },
+            default = {}
           } },
           { jwt_at_payload = {
             type = "boolean",
@@ -106,14 +107,24 @@ return {
             required = true
           } },
           { jwt_at_payload_http_code = {
-              type = "number",
-              default = 200,
-              required = true
+            type = "number",
+            default = 200,
+            required = true
           } },
           { jwt_at_payload_key = {
-              type = "string",
-              default = "access_token",
-              required = true
+            type = "string",
+            default = "access_token",
+            required = true
+          } },
+          { unescape_uri = {
+            type = "boolean",
+            default = false,
+            required = true
+          } },
+          { strip_port_from_host = {
+            type = "boolean",
+            default = false,
+            required = true
           } },
         }, -- end of fields
       }, -- end of config

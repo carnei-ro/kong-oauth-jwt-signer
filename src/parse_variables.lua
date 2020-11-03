@@ -65,8 +65,13 @@ function _M:declare_common_vars(conf)
   local oauth_cred_id     = conf['oauth_cred_id']
   local private_key_id    = conf['private_key_id']
 
+  local unescape_uri      = conf['unescape_uri']
+
   local uri_args          = ngx.req.get_uri_args()
   local uri               = uri_args['uri'] or ""
+  if unescape_uri then
+    uri = ngx.unescape_uri(uri)
+  end
   local jwt_validity      = conf['jwt_validity']
   local cookie_name       = conf['cookie_name']
   local secure_cookies    = conf['secure_cookies']
@@ -76,8 +81,15 @@ function _M:declare_common_vars(conf)
   local ssl_verify        = conf['ssl_verify']
   local cb_scheme         = conf['callback_scheme'] or ngx.var.scheme
   local cb_server_name    = ngx.req.get_headers()["Host"]
+  if conf['strip_port_from_host'] then
+    cb_server_name = cb_server_name:match( "(.-):?%d*$" )
+  end
   local cb_url            = cb_scheme .. "://" .. cb_server_name .. cb_uri
-  local redirect_url      = cb_scheme .. "://" .. cb_server_name .. ngx.var.request_uri
+  local request_uri       = ngx.var.request_uri
+  if unescape_uri then
+    request_uri = ngx.unescape_uri(request_uri)
+  end
+  local redirect_url      = cb_scheme .. "://" .. cb_server_name .. request_uri
 
   local jwt_at_payload           = conf['jwt_at_payload']
   local jwt_at_payload_http_code = conf['jwt_at_payload_http_code']
@@ -100,7 +112,8 @@ function _M:declare_common_vars(conf)
           redirect_url,
           jwt_at_payload,
           jwt_at_payload_http_code,
-          jwt_at_payload_key
+          jwt_at_payload_key,
+          unescape_uri
 end
 
 function _M:declare_provider_specific_vars(conf)
@@ -171,11 +184,11 @@ function _M:declare_key_client_id_secret(oauth_cred_id, private_key_id, conf)
   client_secret = client_secret and client_secret or conf['client_secret']
   if conf['private_keys'] then
     if conf['private_keys'][private_key_id] then
-      key = private_keys[private_key_id]
+      key = conf['private_keys'][private_key_id]
     end
   else
     local private_keys = load_private_keys()
-    if private_keys[private_key_id] then
+    if private_keys and private_keys[private_key_id] then
       key = private_keys[private_key_id]
     else
       return_error(500, ("PRIVATE KEY ID: " .. private_key_id .. " not found at"))

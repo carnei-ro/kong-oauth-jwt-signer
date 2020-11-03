@@ -38,7 +38,7 @@ plugins:
     callback_scheme: null
     private_key_id: 12345678-1234-1234-1234-123456789ABC
     ssl_verify: true
-    scopes: # (List) Auto complet depends on provider
+    scopes: # (List) Auto complete depends on provider
     # scopes:
     # - email
     # - profile
@@ -46,6 +46,8 @@ plugins:
     jwt_at_payload: false
     jwt_at_payload_http_code: 200
     jwt_at_payload_key: access_token
+    unescape_uri: false
+    strip_port_from_host: false
 ```
 
 ## Requirements

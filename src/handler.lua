@@ -3,7 +3,7 @@ local access = require("kong.plugins." .. plugin_name .. ".oauth")
 
 local plugin = {
   PRIORITY = 1000,
-  VERSION = "0.2.0-1",
+  VERSION = "0.3.0-1",
 }
 
 function plugin:access(plugin_conf)
