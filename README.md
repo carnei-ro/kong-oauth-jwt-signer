@@ -1,6 +1,6 @@
 # Kong OAuth JWT Signer
 
-OpenID Connect for "facebook", "github", "gitlab", "gluu", "google", "microsoft" or "zoho".
+OpenID Connect for "facebook", "github", "gitlab", "gluu", "google", "microsoft", "yandex" or "zoho".
 
 ## Use
 

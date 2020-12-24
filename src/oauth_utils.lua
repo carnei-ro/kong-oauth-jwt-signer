@@ -214,6 +214,21 @@ local function generate_claims_microsoft(profile, issuer, jwt_validity)
   return claims
 end
 
+local function generate_claims_yandex(profile, issuer, jwt_validity)
+  local claims = {}
+  claims["sub"] = profile["login"]
+  claims["iss"] = issuer
+  claims["iat"] = ngx_time()
+  claims["exp"] = ngx_time() + jwt_validity
+  claims["name"] = profile["real_name"]
+  claims["user"] = profile["login"]:match("([^@]+)@.+")
+  claims["domain"] = profile["login"]:match("[^@]+@(.+)")
+  claims["given_name"] = profile["first_name"]
+  claims["family_name"] = profile["last_name"]
+  claims["provider"] = 'yandex'
+  return claims
+end
+
 local function generate_claims_zoho(profile, issuer, jwt_validity)
   local claims = {}
   claims["sub"] = profile["Email"]
@@ -327,7 +342,7 @@ end
 
 function _M:request_profile(userinfo_url, token, ssl_verify, provider)
   local profile, err
-  if ((provider == 'google') or (provider == 'github') or (provider == 'microsoft')) then
+  if ((provider == 'google') or (provider == 'github') or (provider == 'microsoft') or (provider == 'yandex')) then
     profile, err = request_profile(userinfo_url, "Bearer " .. token["access_token"], ssl_verify)
   elseif (provider == 'zoho') then
     profile, err = request_profile(userinfo_url, "Zoho-oauthtoken " .. token["access_token"], ssl_verify)
@@ -355,6 +370,8 @@ function _M:generate_claims(profile, issuer, jwt_validity, provider)
     claims = generate_claims_gitlab(profile, issuer, jwt_validity)
   elseif (provider == 'microsoft') then
     claims = generate_claims_microsoft(profile, issuer, jwt_validity)
+  elseif (provider == 'yandex') then
+    claims = generate_claims_yandex(profile, issuer, jwt_validity)
   elseif (provider == 'zoho') then
     claims = generate_claims_zoho(profile, issuer, jwt_validity)
   else

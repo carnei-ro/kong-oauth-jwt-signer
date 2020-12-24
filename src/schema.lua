@@ -17,6 +17,7 @@ return {
               "gluu",
               "google",
               "microsoft",
+              "yandex",
               "zoho",
             },
             default = "google",

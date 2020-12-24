@@ -159,6 +159,12 @@ function _M:declare_provider_specific_vars(conf)
     local access_token_url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
     local userinfo_url     = 'https://graph.microsoft.com/v1.0/me'
     return scope, authorize_url, access_token_url, userinfo_url
+  elseif (conf['oauth_provider'] == 'yandex') then
+    local scope            = conf['scopes'] and table_concat(conf['scopes'], " ") or "login:email login:info login:avatar"
+    local authorize_url    = 'https://oauth.yandex.com/authorize'
+    local access_token_url = 'https://oauth.yandex.com/token'
+    local userinfo_url     = 'https://login.yandex.ru/info'
+    return scope, authorize_url, access_token_url, userinfo_url
   elseif (conf['oauth_provider'] == 'zoho') then
     local scope            = conf['scopes'] and table_concat(conf['scopes'], " ") or "Aaaserver.profile.read"
     local authorize_url    = 'https://accounts.zoho.com/oauth/v2/auth'
