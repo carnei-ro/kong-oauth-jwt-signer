@@ -2,7 +2,6 @@ local _M = {}
 
 local json           = require("cjson").new()
 local openssl_digest = require("resty.openssl.digest")
-local openssl_pkey   = require("resty.openssl.pkey")
 local http           = require("resty.http")
 
 local tostring = tostring
@@ -28,7 +27,7 @@ local function return_error(code,message)
   ngx_exit(ngx.status)
 end
 
-local function sign_jwt(claims, key, private_key_id, alg, typ)
+local function sign_jwt(claims, pkey, private_key_id, alg, typ)
   alg = alg or 'RS512'
   typ = typ or 'JWT'
   local headers={}
@@ -39,7 +38,6 @@ local function sign_jwt(claims, key, private_key_id, alg, typ)
   local c = encode_base64(json.encode(claims)):gsub("==$", ""):gsub("=$", "")
   local data = h .. '.' .. c
 
-  local pkey = openssl_pkey.new(key)
   local digest = openssl_digest.new("sha512")
   digest:update(data)
   local signature, err = pkey:sign(digest)
@@ -229,23 +227,23 @@ local function generate_claims_zoho(profile, issuer, jwt_validity)
   return claims
 end
 
-local function redirect_to_auth(authorize_url, client_id, scope, cb_url, redirect_url, code)
+local function redirect_to_auth(authorize_url, client_id, scope, cb_url, state, code)
   return ngx.redirect(authorize_url .."?" .. ngx.encode_args({
     client_id     = client_id,
     scope         = scope,
     response_type = code,
     redirect_uri  = cb_url,
-    state         = redirect_url
+    state         = state
   }))
 end
 
-local function redirect_to_auth_github(authorize_url, client_id, scope, cb_url, redirect_url, code, allow_signup)
+local function redirect_to_auth_github(authorize_url, client_id, scope, cb_url, state, code, allow_signup)
   return ngx.redirect(authorize_url .."?" .. ngx.encode_args({
     client_id     = client_id,
     scope         = scope,
     response_type = code,
     redirect_uri  = cb_url,
-    state         = redirect_url,
+    state         = state,
     allow_signup  = allow_signup
   }))
 end
@@ -281,18 +279,18 @@ function _M:request_access_token(access_token_url, code, client_id, client_secre
   return json.decode(res.body)
 end
 
-function _M:redirect_to_auth(authorize_url, client_id, scope, cb_url, redirect_url, provider, code, allow_signup)
+function _M:redirect_to_auth(authorize_url, client_id, scope, cb_url, state, provider, code, allow_signup)
   allow_signup = allow_signup or "false"
   code = code or "code"
   if (provider == 'github') then
-    redirect_to_auth_github(authorize_url, client_id, scope, cb_url, redirect_url, code, allow_signup)
+    redirect_to_auth_github(authorize_url, client_id, scope, cb_url, state, code, allow_signup)
   else
-    redirect_to_auth(authorize_url, client_id, scope, cb_url, redirect_url, code)
+    redirect_to_auth(authorize_url, client_id, scope, cb_url, state, code)
   end
 end
 
-function _M:redirect_with_cookie(claims, key, private_key_id, jwt_validity, secure_cookies, http_only_cookies, cookie_name, uri_args, jwt_at_payload, jwt_at_payload_http_code, jwt_at_payload_key, unescape_uri)
-  local jwt = sign_jwt(claims, key, private_key_id)
+function _M:redirect_with_cookie(claims, pkey, private_key_id, jwt_validity, secure_cookies, http_only_cookies, cookie_name, redirect_url, jwt_at_payload, jwt_at_payload_http_code, jwt_at_payload_key, unescape_uri)
+  local jwt = sign_jwt(claims, pkey, private_key_id)
 
   local expires      = ngx_time() + jwt_validity
   local cookie_tail  = ";version=1;path=/;Max-Age=" .. expires
@@ -305,23 +303,18 @@ function _M:redirect_with_cookie(claims, key, private_key_id, jwt_validity, secu
   ngx_header["Set-Cookie"] = {
     cookie_name .. "=" .. jwt .. cookie_tail
   }
-  local m, err = ngx_re_match(uri_args["state"], "uri=(?<uri>.+)")
-  if m then
-    local uri = m["uri"]
-    if unescape_uri then
-      uri = ngx.unescape_uri(m["uri"])
-    end
-    if jwt_at_payload then
-      ngx.status = jwt_at_payload_http_code
-      ngx_header["Content-Type"]='application/json'
-      ngx_header["Location"]=uri
-      ngx_say('{"' .. jwt_at_payload_key .. '": "'.. jwt .. '"}')
-      ngx_exit(ngx.status)
-    else
-      return ngx_redirect(uri)
-    end
+  local uri = redirect_url
+  if unescape_uri then
+    uri = ngx.unescape_uri(redirect_url)
+  end
+  if jwt_at_payload then
+    ngx.status = jwt_at_payload_http_code
+    ngx_header["Content-Type"]='application/json'
+    ngx_header["Location"]=uri
+    ngx_say('{"' .. jwt_at_payload_key .. '": "'.. jwt .. '"}')
+    ngx_exit(ngx.status)
   else
-    return ngx_exit(ngx.BAD_REQUEST)
+    return ngx_redirect(uri)
   end
 end
 

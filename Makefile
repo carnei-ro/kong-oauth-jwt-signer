@@ -68,8 +68,8 @@ kong-reload:
 	@docker exec -it $$(docker ps -qf name=${NAME}_kong_1) sh -c "/usr/local/bin/kong reload"
 
 restart:
-	@docker rm -vf $$(docker ps -qf name=${NAME}_kong_1)
-	@docker-compose up -d
+	@CRED=$$(cat cred) docker rm -vf $$(docker ps -qf name=${NAME}_kong_1)
+	@CRED=$$(cat cred) docker-compose up -d
 
 reconfigure: clean start kong-logs
 
@@ -92,8 +92,8 @@ resty-script:
 config:
 	@curl -s -X POST http://localhost:8001/services/ -d 'name=httpbin' -d url=http://httpbin.org/anything
 	@curl -s -X POST http://localhost:8001/services/httpbin/routes -d 'paths[]=/' -d 'name=root'
-	@curl -s -X POST http://localhost:8001/services/httpbin/routes -d 'paths[]=/_oauth' -d 'name=gitlab' -d 'hosts[]=localhost'
-	@curl -i -X POST http://localhost:8001/routes/gitlab/plugins -d "name=${NAME}" -d "config.oauth_provider=gitlab" -d "config.oauth_cred_id=gitlab" -d "config.secure_cookies=false"
+	@curl -s -X POST http://localhost:8001/services/httpbin/routes -d 'paths[]=/_oauth' -d 'name=github' -d 'hosts[]=localhost'
+	@curl -i -X POST http://localhost:8001/routes/github/plugins -d "name=${NAME}" -d "config.oauth_provider=github" -d "config.oauth_cred_id=github" -d "config.secure_cookies=false"
 
 config-plugin-remove:
 	@curl -i -X DELETE http://localhost:8001/plugins/$$(curl -s http://localhost:8001/plugins/ | jq -r ".data[] |  select (.name|test(\"${NAME}\")) .id")

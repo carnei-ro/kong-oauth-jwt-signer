@@ -2,7 +2,6 @@ local _M = {}
 
 local json           = require("cjson").new()
 local ngx_b64        = require("ngx.base64")
-local openssl_digest = require("resty.openssl.digest")
 local openssl_pkey   = require("resty.openssl.pkey")
 
 local os_getenv = os.getenv
@@ -183,10 +182,8 @@ function _M:declare_key_client_id_secret(oauth_cred_id, private_key_id, conf)
   end
   client_id = client_id and client_id or conf['client_id']
   client_secret = client_secret and client_secret or conf['client_secret']
-  if conf['private_keys'] then
-    if conf['private_keys'][private_key_id] then
-      key = conf['private_keys'][private_key_id]
-    end
+  if conf['private_keys'][private_key_id] ~= nil then
+    key = ngx_decode_b64(conf['private_keys'][private_key_id])
   else
     local private_keys = load_private_keys()
     if private_keys and private_keys[private_key_id] then
@@ -198,7 +195,8 @@ function _M:declare_key_client_id_secret(oauth_cred_id, private_key_id, conf)
   if ((not key) or (not client_id) or (not client_secret)) then
     return_error(500, ("Could not load key, client_id or client_secret"))
   end
-  return ngx_decode_b64(key), client_id, client_secret
+  local pkey = openssl_pkey.new(key)
+  return pkey, client_id, client_secret
 end
 
 return _M
