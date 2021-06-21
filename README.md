@@ -1,5 +1,9 @@
 # Kong OAuth JWT Signer
 
+:warning: **Deprecated** :warning:
+
+**Consider using https://github.com/carnei-ro/kong-plugin-oauth-jwt and https://github.com/carnei-ro/kong-plugin-oauth-jwt-signer**
+
 OpenID Connect for "facebook", "github", "gitlab", "gluu", "google", "microsoft", "yandex" or "zoho".
 
 ## Use
